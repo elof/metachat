@@ -1,6 +1,6 @@
 # MetaChat Application
 
-MetaChat is a real-time chat application that allows users to create rooms and communicate with others.
+MetaChat is a real-time chat application that allows users to create rooms and communicate with others.It's built with Macrometa Document stores with Streams enabled and Node. To take full advantage of the distributed nature of Macrometa for low latency and high throughput, the application can use Edge Workers in place of a centralized Node server.
 
 ## Getting Started
 
@@ -65,4 +65,3 @@ Create a chat room by entering a room name and your username.
 Share the room URL with others to join the same chat room.
 
 Type your messages and hit send or press enter to communicate.
- 
