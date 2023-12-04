@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Chat Room</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="logo">MetaChat</div>
+    <form id="createRoomForm">
+        <input type="text" id="roomName" name="roomName" placeholder="Chat Room Name" required><br>
+        <input type="text" id="userName" name="userName" placeholder="User Name" required><br>
+        <input type="submit" value="Create Room">
+    </form>
+
+    <script>
+        document.getElementById('createRoomForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const roomName = document.getElementById('roomName').value;
+            const userName = document.getElementById('userName').value;
+    
+            fetch('/create-room', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `roomName=${encodeURIComponent(roomName)}&userName=${encodeURIComponent(userName)}`
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = `/${roomName}?user=${encodeURIComponent(userName)}`;
+                } else {
+                    console.error('Error creating room');
+                }
+            }).catch(error => console.error('Fetch error:', error));
+        });
+    </script>
+    </body>
+</html>

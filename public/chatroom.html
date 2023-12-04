@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="meta-chat-container">
+        <header id="chat-header">
+            <h1>MetaChat</h1>
+            <!-- Add this form somewhere in your HTML where you'd like the username to be changeable -->
+            <div id="change-username-form">
+                <input type="text" id="new-username" placeholder="Enter new username" required />
+                <input type="button" id="submit-username" value="Submit" />
+            </div>
+
+        </header>
+        <section id="chat-window">
+            <!-- Messages will be displayed here -->
+        </section>
+        <footer>
+            <div id="chat-footer">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button type="button" id="send-button">Send</button>
+            </div>   
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const userName = params.get('user');
+        const roomName = window.location.pathname.replace('/', '');
+
+        const ws = new WebSocket(`ws://localhost:3000/${roomName}`);
+
+        ws.onopen = () => console.log('Connected to WebSocket');
+        ws.onerror = error => console.error('WebSocket error:', error);
+        ws.onclose = () => {
+            console.log('WebSocket connection closed. Attempting to reconnect...');
+            setTimeout(() => window.location.reload(), 5000);
+        };
+
+        ws.onmessage = function(event) {
+            // Check if the message data is a string that can be parsed as JSON
+            if (typeof event.data === 'string') {
+                try {
+                    const messages = JSON.parse(event.data);
+
+                    // Check if the parsed data is an array (historical messages) or an object (real-time message)
+                    if (Array.isArray(messages)) {
+                        messages.forEach(messageData => addMessageToChatWindow(messageData));
+                    } else if (typeof messages === 'object' && messages !== null) {
+                        addMessageToChatWindow(messages);
+                    }
+                } catch (e) {
+                    console.error('Error parsing message data:', e);
+                }
+            }
+        };
+
+        function sendMessageToServer(message) {
+            fetch('/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomName, userName, message })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Message sent to server');
+                } else {
+                    console.error('Failed to send message to server');
+                }
+            })
+            .catch(error => console.error('Fetch error:', error));
+        }
+
+        function addMessageToChatWindow(messageData) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${messageData.userName}: ${messageData.message}`;
+            messageElement.classList.add('message');
+            if (messageData.userName === userName) {
+                messageElement.classList.add('my-message');
+            } else {
+                messageElement.classList.add('other-message');
+            }
+            document.getElementById('chat-window').appendChild(messageElement);
+        }
+
+        document.getElementById('send-button').addEventListener('click', function(event) {
+            // event.preventDefault(); // Prevent the default form submission
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            if (message) {
+                sendMessageToServer(message);
+                messageInput.value = '';
+            }
+        });
+
+        document.getElementById('change-username-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const newUsername = document.getElementById('new-username').value.trim();
+            if (newUsername) {
+                // Get the current URL and pathname
+                const currentUrl = new URL(window.location.href);
+                const pathname = currentUrl.pathname;
+
+                // Set the new username in the search parameters
+                currentUrl.searchParams.set('user', newUsername);
+
+                // Redirect to the new URL with the updated username and refresh the page
+                window.location.href = `${pathname}${currentUrl.search}`;
+            }
+        });
+
+
+        document.getElementById('message-input').focus();
+    });
+    </script>
+</body>
+</html>
