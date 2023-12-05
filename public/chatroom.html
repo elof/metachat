@@ -10,8 +10,8 @@
             <h1>MetaChat</h1>
             <!-- Add this form somewhere in your HTML where you'd like the username to be changeable -->
             <div id="change-username-form">
-                <input type="text" id="new-username" placeholder="Enter new username" required />
-                <input type="button" id="submit-username" value="Submit" />
+                <input type="text" id="username-input" placeholder="Enter new username" required />
+                <button type="button" id="submit-username"/>Submit</button>
             </div>
 
         </header>
@@ -20,8 +20,10 @@
         </section>
         <footer>
             <div id="chat-footer">
-                <input type="text" id="message-input" placeholder="Type your message...">
-                <button type="button" id="send-button">Send</button>
+                <div id="message-form">
+                    <input type="text" id="message-input" placeholder="Type your message...">
+                    <button type="button" id="send-button">Send</button>
+                </div>
             </div>   
         </footer>
     </div>
@@ -87,9 +89,23 @@
             document.getElementById('chat-window').appendChild(messageElement);
         }
 
+        function triggerButtonClickOnEnter(inputElementId, buttonElementId) {
+            document.getElementById(inputElementId).addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent the default action to stop the form submission
+                    document.getElementById(buttonElementId).click();
+                }
+            });
+        }
+
+        // Call this function for the message input
+        triggerButtonClickOnEnter('message-input', 'send-button');
+
+        // Call this function for the new username input
+        triggerButtonClickOnEnter('username-input', 'submit-username');
+
         document.getElementById('send-button').addEventListener('click', function(event) {
-            // event.preventDefault(); // Prevent the default form submission
-            const messageInput = document.getElementById('message-input');
+            const messageInput = document.getElementById('message-input'); // Use the updated ID
             const message = messageInput.value.trim();
             if (message) {
                 sendMessageToServer(message);
@@ -97,10 +113,8 @@
             }
         });
 
-        document.getElementById('change-username-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            const newUsername = document.getElementById('new-username').value.trim();
+        document.getElementById('submit-username').addEventListener('click', function() {
+            const newUsername = document.getElementById('username-input').value.trim(); // Use the updated ID
             if (newUsername) {
                 // Get the current URL and pathname
                 const currentUrl = new URL(window.location.href);
@@ -114,9 +128,8 @@
             }
         });
 
-
-        document.getElementById('message-input').focus();
-    });
+            document.getElementById('message-input').focus();
+        });
     </script>
 </body>
 </html>
